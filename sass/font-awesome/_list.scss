@@ -1,0 +1,22 @@
+// List Icons
+// -------------------------
+
+.#{$fa-css-prefix}-ul {
+  padding-left: 0;
+  margin-left: $fa-li-width;
+  list-style-type: none;
+  > li {
+    position: relative;
+    margin-bottom: 5px;
+  }
+}
+.#{$fa-css-prefix}-li {
+  position: absolute;
+  left: -($fa-li-width + .3);
+  width: $fa-li-width;
+  top: (2em / 4.5);
+  text-align: center;
+  &.#{$fa-css-prefix}-lg {
+    left: -$fa-li-width + (4em / 14);
+  }
+}
