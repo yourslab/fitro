@@ -38,8 +38,8 @@ $(function() {
 
 		// Calculate Recipe Every Second
 		setTimeout(function () {
-	        calculateRecipe(calories, carb, protein, fat);
-    	}, 1000);
+			calculateRecipe(calories, carb, protein, fat);
+		}, 1000);
 	}
 
 	function calculateRecipe(calories, carbs, protein, fat) {
@@ -272,45 +272,58 @@ $(function() {
 
 			var fv = f(x),
 				g = gradient(x),
+				chunk = 100;
 				iteration = 0;
 
-			while (!done && iteration < 500000) { // Loops until no improvement can be made or max iterations
-				iteration++;
-
-				var done = false,
-					stepsize = 10, // Start with big step
-					linesearch = true;
-
-				while (linesearch) {
-					var newx = [];
-
-					// Calculate new potential value
-					for (var i = 0; i < x.length; i++) {
-						newx[i] = x[i] - g[i] * stepsize;
-						if (newx[i] < 0) {
-							newx[i] = 0;
-						}
+			// Doing linesearch in chunks of 100 prevents browser from freezing
+			function doChunk() {
+				var cnt = chunk;
+				while (cnt-- && !done && iteration < 500000) { // Loops until no improvement can be made or max iterations
+					if(iteration % 10000 == 0) {
+						setTimeout(function() {}, 1); 
 					}
 
-					var newf = f(newx); // Get fitness
-					if (newf < fv) {    // If improvement then accept and recalculate gradient
-						fv = newf;
-						x = newx;
-						g = gradient(x);
-						linesearch = false; // exit line search
-					}
-					else {
-						stepsize *= 0.5; // If bad then halve step size
-						if (stepsize < 0.00000001) { // If stepsize too small then quit search entirely
-							done = true;
-							linesearch = false;
+					iteration++;
+
+					var done = false,
+						stepsize = 10, // Start with big step
+						linesearch = true;
+
+					while (linesearch) {
+						var newx = [];
+
+						// Calculate new potential value
+						for (var i = 0; i < x.length; i++) {
+							newx[i] = x[i] - g[i] * stepsize;
+							if (newx[i] < 0) {
+								newx[i] = 0;
+							}
 						}
-						else { // otherwise continue line search
-							linesearch = true;
+
+						var newf = f(newx); // Get fitness
+						if (newf < fv) {    // If improvement then accept and recalculate gradient
+							fv = newf;
+							x = newx;
+							g = gradient(x);
+							linesearch = false; // exit line search
+						}
+						else {
+							stepsize *= 0.5; // If bad then halve step size
+							if (stepsize < 0.00000001) { // If stepsize too small then quit search entirely
+								done = true;
+								linesearch = false;
+							}
+							else { // otherwise continue line search
+								linesearch = true;
+							}
 						}
 					}
 				}
+				if(!done && iteration < 500000) {
+					setTimeout(doChunk, 1);
+				}
 			}
+			doChunk();
 
 			var pricePerDay = 0;
 			for (var k = 0; k < x.length; k++) {
@@ -321,7 +334,7 @@ $(function() {
 			}
 
 			$(".full-price").html(pricePerDay.toFixed(2));
-    		$(".meal-price").html((600.0/calories * pricePerDay).toFixed(2))
+			$(".meal-price").html((600.0/calories * pricePerDay).toFixed(2))
 
 			// Map number of servings into raw quantities because that's what this function is supposed to return
 			for (var i = 0; i < ingredients.length; i++) {
@@ -390,7 +403,7 @@ $(function() {
 				}
 
 				$("."+nutrient+"_u").html(parseInt(nutrientInIngredients));
-    			$("."+nutrient+"_pct").html(parseInt(pct));
+				$("."+nutrient+"_pct").html(parseInt(pct));
 
 				/*nutrientsTable.push([
 					nutrient || '',                           // Nutrient Name

@@ -272,6 +272,10 @@ h1 {
   height:4.75rem;
 }
 
+.caption {
+  box-shadow: 0px -15px 120px -30px rgba(0,0,0,1);
+}
+
 input::after,
 input::before,
 select::after,
