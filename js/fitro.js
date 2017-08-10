@@ -1,4 +1,5 @@
 var saveTimeout;
+var fetched = false;
 $(function() {
 	var weightMeasurement = 'lbs',
 		sliderMin = 50,
@@ -59,11 +60,14 @@ $(function() {
 			highWeight;   // How to weight penalties for going over or under a requirement
 
 		var nutrients = [
-			'calories', 'carbs', 'protein', 'fat', 'saturated-fat','biotin', 'calcium', 'chloride', 'cholesterol', 'choline', 'chromium', 'copper',
-			'fiber', 'folate', 'iodine', 'iron', 'maganese', 'magnesium', 'molybdenum', 'niacin', 'omega_3', 'omega_6',
-			'panthothenic', 'phosphorus', 'potassium', 'riboflavin', 'selinium', 'sodium', 'sulfur', 'thiamin',
+			'calories', 'carbs', 'sugar', 'stevia', 'protein', 'fat', 'saturated-fat','biotin', 'calcium', 'chloride', 'cholesterol', 'choline', 'chromium', 'copper',
+			'fiber', 'folate', 'iodine', 'iron', 'manganese', 'magnesium', 'molybdenum', 'niacin', 'omega_3', 'omega_6',
+			'pantothenic', 'phosphorus', 'potassium', 'riboflavin', 'selenium', 'sodium', 'sulfur', 'thiamin',
 			'vitamin_a', 'vitamin_b12', 'vitamin_b6', 'vitamin_c', 'vitamin_d', 'vitamin_e', 'vitamin_k', 'zinc'
 		];
+
+		var minRatio = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], // Minimum ratio of ingredient's mass to total mass
+			maxRatio = [1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]; // Maximum ratio of ingredient's mass to total mass
 
 		// These nutrients are considered 'more important'
 		var macroNutrients = ["calories", "protein", "carbs", "fat"];
@@ -80,7 +84,6 @@ $(function() {
 		 * @author Alrecenk (Matt McDaniel) of Inductive Bias LLC (www.inductivebias.com) March 2014
 		 */
 		function f(x) {
-
 			var output = createArray(targetLength),
 				totalError = 0;
 
@@ -88,9 +91,11 @@ $(function() {
 			for (var t = 0; t < targetLength; t++) {
 				// Calculate output
 				output[t] = 0;
+
 				// Calculate total mass
 				for (var i = 0; i < ingredientLength; i++) {
 					output[t] += M[i][t] * x[i];
+					//console.log("output:["+t+"]"+output[t]);
 				}
 				// If too low penalize with low weight
 				if (output[t] < 1) {
@@ -99,26 +104,32 @@ $(function() {
 				else if (output[t] > maxPerMin[t]) { // If too high penalize with high weight
 					totalError += highWeight[t] * (maxPerMin[t] - output[t]) * (maxPerMin[t] - output[t]);
 				}
+				/*if (t == 20) {
+					if(output[t] < output[t+1]) {
+						totalError += 10000*(output[t+1] - output[t]) * (output[t+1] - output[t]);
+					} else if(output[t] > output[t+1]) {
+						totalError += (output[t+1] - output[t]) * (output[t+1] - output[t]);
+					}
+				}*/
 			}
 
-			//console.log(mass);
-
 			// Calculate cost penalty, |c*x|
-			// but X is nonnegative so absolute values aren't necessarry
+			// but X is nonnegative so absolute values aren't necessary
 			var penalty = 0;
 			var mass = 0;
 			for (var i = 0; i < ingredientLength; i++) {
 				penalty += cost[i] * x[i];
-				mass += x[i]
+				mass += x[i];
 			}
 
-			//console.log(mass);
-
-			/*if(x[3] > 0.05) {
-				totalError += (0.05 - x[3])*(0.05 - x[3]);
-			}*/
-			if(x[3] > 0.05*mass) {
-				totalError += (0.05*mass - x[3])*(0.05*mass - x[3]);
+			// Increase error for not meeting a certain ratio requirement
+			for (var i = 0; i < ingredientLength; i++) {
+				if (x[i] < minRatio[i]*mass) {
+					totalError += (minRatio[i]*mass - x[i])*(minRatio[i]*mass - x[i]);
+				}
+				else if (x[i] > maxRatio[i]*mass) {
+					totalError += (maxRatio[i]*mass - x[i])*(maxRatio[i]*mass - x[i]);
+				}
 			}
 
 			return totalError + w * penalty;
@@ -156,23 +167,31 @@ $(function() {
 					else if (output[t] > maxPerMin[t]) { // If output too high calculate gradient from high parabola
 						dx[i] += highWeight[t] * M[i][t] * (output[t] - maxPerMin[t]);
 					}
+					/*if (t == 20) {
+						if (output[t] < output[t+1]) {
+							dx[i] += 10000*M[i][t] * (output[t] - output[t+1]);
+						} else if(output[t] > output[t+1]) {
+							dx[i] += M[i][t] * (output[t] - output[t+1]);
+						}
+					}*/
 				}
+				
 				dx[i] += cost[i] * w; // + c w
-				if(i == 0 && 0.05*mass <= x[i]) dx[i] += w;
 			}
 
 			var mass = 0;
 			for (var i = 0; i < ingredientLength; i++) {
-				mass += x[i]
+				mass += x[i];
 			}
 
-			/*if(x[3] > 0.05) {
-				dx[3] += (x[3] - 0.05);
-			}*/
-			if(x[0] > 0.05*mass) {
-				dx[0] += (x[0] - 0.05*mass);
+			for (var i = 0; i < ingredientLength; i++) {
+				if (x[i] < minRatio[i]*mass) { // If ingredient's mass too low calculate gradient from low parabola
+					dx[i] += (x[i] - minRatio[i]*mass);
+				}
+				else if (x[i] > maxRatio[i]*mass) { // If ingredient's mass too high calculate gradient from high parabola
+					dx[i] += (x[i] - maxRatio[i]*mass);
+				}
 			}
-
 
 			return dx;
 		}
@@ -211,7 +230,7 @@ $(function() {
 			// There are some hardcoded rules that should be made configurable in the future.
 			for (var t = 0; t < targetAmount.length; t++) {
 				// If has a max for this element
-				if (typeof nutrientTargets[targetName[t] + "_max"] > targetAmount[t]) {
+				if (nutrientTargets[targetName[t] + "_max"] > targetAmount[t]) {
 					var maxvalue = nutrientTargets[targetName[t] + "_max"];
 					maxPerMin[t] = maxvalue / targetAmount[t]; // Record it
 				}
@@ -221,26 +240,46 @@ $(function() {
 
 				// Weight macro nutrients values higher and make sure we penalize for going over (ad hoc common sense rule)
 				if (macroNutrients.indexOf(targetName[t]) >= 0) {
+					// Gain weight quickly
+					if (goal == 1.25) {
+						lowWeight[t] = 30000;
+						highWeight[t] = 10000;
+					// Gain weight steadily
+					} else if (goal == 1.15) {
+						lowWeight[t] = 20000;
+						highWeight[t] = 10000;
+					// Lose weight steadily
+					} else if (goal == 0.85) {
+						lowWeight[t] = 10000;
+						highWeight[t] = 20000;
+					// Lose weight quickly
+					} else if (goal == 0.75) {
+						lowWeight[t] = 10000;
+						highWeight[t] = 30000;
+					// Maintain weight or other
+					} else {
+						lowWeight[t] = 10000;
+						highWeight[t] = 10000;
+					}
+
 					// More importance is given to calories over protein, carbs, and fat
 					if (targetName[t] == "calories") {
-						lowWeight[t] = 10;
-						highWeight[t] = 10;
-					} else {
-						lowWeight[t] = 5;
-						highWeight[t] = 5;
+						lowWeight[t] *= 2;
+						highWeight[t] *= 2;
 					}
+
 					maxPerMin[t] = 1;
 				}
 				else {
-					lowWeight[t] = 1;
-					highWeight[t] = 1;
+					lowWeight[t] = 20000;
+					highWeight[t] = 10000;
 				}
 
-				// Weird glitch where niacin isn't being read as having a max, so I hardcoded in this
-				// should be removed when that is tracked down
-				if (targetName[t] == "niacin") {
-					maxPerMin[t] = 35.0 / 16.0;
+				if (targetName[t] == "omega_6") {
+					lowWeight[t] = 20;
+					highWeight[t] = 1000;
 				}
+
 				// console.log(targetName[t] + " : " + targetAmount[t] +" --max ratio :" + maxPerMin[t] +" weights :" + lowWeight[t]+"," + highWeight[t]);
 			}
 
@@ -328,7 +367,7 @@ $(function() {
 			var pricePerDay = 0;
 			for (var k = 0; k < x.length; k++) {
 				if(ingredients[k].name == "MK-7 Vitamin K-2") {
-					x[k] = Math.ceil(x[k]); 
+					//x[k] = Math.ceil(x[k]); 
 				}
 				pricePerDay += x[k] * cost[k];
 			}
@@ -363,11 +402,70 @@ $(function() {
 			nutrientTargets = recipe.nutrientTargets,
 			i, j, nutrient;
 
+		// Different ingredients depend on user preferences
+
+		// Add Olive Oil if user wants >=60% calories from fat
+		if(macros.fat < 60) ingredients.shift();
+
+		// Combine blends into a single ingredient
+		ingredients = ingredients.map(function(ingredient) {
+			if( Object.prototype.toString.call( ingredient ) === '[object Array]' ) {
+				var max_serving = 0;
+				var max_container_size = ingredient[0].container_size/(ingredient[0].percent/100);
+				ingredient.forEach(function(part) {
+					if(part.serving > max_serving) max_serving = part.serving;
+
+					// Find the maximum amount of grams that we can make given 
+					// each ingredient's container size
+					if(Math.floor(part.container_size/(part.percent/100)) < max_container_size) 
+						max_container_size = Math.floor(part.container_size/(part.percent/100));
+				});
+				console.log("max_container_size "+max_container_size);
+				if(max_serving) {
+					ingredient.forEach(function(part) {
+						// Normalize each ingredient to have the same serving size
+						// and apply percentage multiplier
+						multiplier = max_serving/part.serving;
+						percent = part.percent/100;
+						part.serving = max_serving*percent;
+
+						nutrients.forEach(function(nutrient) {
+							part[nutrient] *= multiplier*percent;
+						});
+					});
+
+					// Sum up each part to produce the final blend
+					return ingredient.reduce(function(blend, part) {
+						percent = part.percent/100;
+
+						pricePerGram = part.item_cost/part.container_size;
+
+						blend.name += " & "+part.name+" ("+part.percent+"%)";
+						blend.serving += part.serving;
+						blend.container_size = max_container_size;
+						blend.item_cost += pricePerGram*percent*max_container_size;
+
+						nutrients.forEach(function(nutrient) {
+							blend[nutrient] += part[nutrient];
+						});
+						return blend;
+					});
+				}
+			} else {
+				return ingredient;
+			}
+		});
+			
+
 		// Override macros based on user variables from top of this file
 		nutrientTargets.calories = calories;
 		nutrientTargets.carbs    = Math.round(macros.carbs * calories / 100 / 4);
 		nutrientTargets.protein  = Math.round(macros.protein * calories / 100 / 4);
 		nutrientTargets.fat      = Math.round(macros.fat * calories / 100 / 9);
+		nutrientTargets.fiber    = Math.round(calories/1000.0 * 15.0);
+		nutrientTargets.fiber_max    = Math.round(calories/1000.0 * 18.0);
+		nutrientTargets.stevia       = Math.round(calories/1000.0 * 3.0);
+		nutrientTargets.stevia_max   = Math.round(calories/1000.0 * 6.0);
 		nutrientTargets.calories_max = Number((nutrientTargets.calories * 1.04).toFixed(2));
 		nutrientTargets.carbs_max    = Number((nutrientTargets.carbs * 1.04).toFixed(2));
 		nutrientTargets.protein_max  = Number((nutrientTargets.protein * 1.04).toFixed(2));
@@ -377,7 +475,7 @@ $(function() {
 		var ingredientQuantities = generateRecipe(ingredients, nutrientTargets);
 
 		console.log(ingredients.map(function(ingredient) {return ingredient.name}));
-		console.log(ingredientQuantities);
+		console.log(ingredientQuantities.map(function(ingredient) {return ingredient*2}));
 
 		var pct;
 
@@ -397,9 +495,6 @@ $(function() {
 				pct = nutrientTargets[nutrient] ? (nutrientInIngredients / nutrientTargets[nutrient] * 100) : 100;
 				if (nutrientTargets[nutrient + '_max'] > 0 && nutrientInIngredients > nutrientTargets[nutrient + '_max']) {
 					pct = nutrientTargets[nutrient + '_max'] ? (nutrientInIngredients / nutrientTargets[nutrient + '_max'] * 100) : 100;
-				}
-				else {
-					pct = 100
 				}
 
 				$("."+nutrient+"_u").html(parseInt(nutrientInIngredients));

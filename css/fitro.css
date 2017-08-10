@@ -282,7 +282,7 @@ select::after,
 select::before,
 textarea::after,
 textarea::before {
-  box-sizing: border-box;
+  box-sizing: content-box;
 }
 
 .button-container {
@@ -299,8 +299,6 @@ fieldset {
 .form-group {
 font-family: 'ProximaNovaCond Semibold';
   position: relative;
-  margin-top: 4%;
-  margin-bottom: 4%;
 }
 
 .form-inline > .form-group,
@@ -335,6 +333,7 @@ font-family: 'ProximaNovaCond Semibold';
   resize: none;
 }
 .form-group select {
+  text-overflow: ellipsis;
   width: 100%;
   font-size: 2rem;
   height: 3.8rem;
