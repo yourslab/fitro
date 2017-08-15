@@ -3,7 +3,7 @@
 
 <head>
   <meta charset="utf-8">
-  <title>Fitro | A Nutritionally Complete Shake That's Personalized To Your Needs</title>
+  <title>Fitro | A Nutritionally Complete Shake That's Personalized To Your Health And Fitness Needs</title>
 
   <!--SEO Meta Tags-->
   <meta name="description" content="Fitro | A Nutritionally Complete Shake That's Personalized To Your Needs" />
@@ -51,7 +51,7 @@
       <div class="center-container">
         <div class="center-row">
           <div class="col-md-6 tablet-center mobile-center" style="background-color: #eceff1;padding-bottom: 100%;margin-bottom: -100%;">
-            <h4 class="text-normal text-uppercase slogan sr-bottom sr-delay-1">A nutritionally complete shake that's personalized to your needs</h4>
+            <h4 class="text-normal text-uppercase slogan sr-bottom sr-delay-1">A nutritionally complete shake that's personalized to your health and fitness needs</h4>
             <form method="post" class="get-app-form" style="padding: 3% 18% 0 18%;">
                   <div class="form-group col-sm-6 padding-bottom">
                     <input type="number" required="required" name="age" class="calc" placeholder="24"/>
@@ -287,6 +287,10 @@
                     </select>
                     <label class="control-label" for="input" >Fitness Goal</label><i class="bar"></i>
                   </div>
+                  <div class="form-group col-sm-12 padding-bottom">
+                    <input type="number" required="required" placeholder="3" value="3" class="calc" name="meals"/>
+                    <label class="control-label" for="input">Number of Meals Consumed Per Day</label><i class="bar"></i>
+                  </div>
                   <div class="form-group col-sm-12 padding-bottom" style="width:102.5%;margin-left:-2.5%;">
                     <i class="form-end"></i>
                     <!--<div style="background-color:#fff;margin-top:5%;border: 0.125rem solid #000;padding:3%">
@@ -297,7 +301,12 @@
                   </div>
                   <div id="results-container" class="col-sm-12">
                       <div id="results-narrow">Results</div>
-                      <div id="results-wide"><span id="cal" style="color:#000;font-family:'ProximaNovaCond Bold';">2031</span> Calories Per Day</div>
+                      <div id="results-wide">
+                        <div class="resizing-input">
+                          <input id="cal" type="text" placeholder="0" maxlength=4/>
+                          <span style="display:none"></span>
+                          Calories Per Meal</div>
+                        </div>
                       <!-- Weird hack to prevent overflow of Macronutrient Ratios label -->
                       <label class="control-label" for="input" >&zwnj;</label>
                   </div>
@@ -331,7 +340,7 @@
                         Custom
                       </option>
                     </select>
-                    <label class="control-label-special" for="input">Macronutrient Ratios</label><i class="bar"></i>
+                    <label class="control-label-special" for="input">Macros (Macronutrients)</label><i class="bar"></i>
                   </div>
                   <div class="col-sm-12" style="width:102.5%;margin-left:-2%;">
                     <div class="slider-container" style="margin-bottom: 15px;">
@@ -463,7 +472,6 @@
                         <span class="omega_3_u">--</span>g
                       </th>
                       <td>
-                        <b><span class="omega_3_pct">--</span>%</b>
                       </td>
                     </tr>
                     <tr>
@@ -474,7 +482,6 @@
                         <span class="omega_6_u">--</span>g
                       </th>
                       <td>
-                        <b><span class="omega_6_pct">--</span>%</b>
                       </td>
                     </tr>
                     <tr class="thick-end">

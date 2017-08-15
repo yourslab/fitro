@@ -56,9 +56,9 @@ src: local('ProximaNovaCond Semibold'), url('fonts/proximanovacond-semibold-webf
   margin: 0 auto;
   margin-left:-4.25em;
   padding-bottom:0.4em;
-  -webkit-box-shadow: 0px 6px 120px -2px rgba(0,0,0,1);
-  -moz-box-shadow: 0px 6px 120px -2px rgba(0,0,0,1);
-  box-shadow: 0px 6px 120px -2px rgba(0,0,0,1);
+  -webkit-box-shadow: 0px 3px 40px -2px rgba(0,0,0,1);
+  -moz-box-shadow: 0px 3px 40px -2px rgba(0,0,0,1);
+  box-shadow: 0px 3px 40px -2px rgba(0,0,0,1);
 }
 
 #logo {
@@ -71,6 +71,18 @@ src: local('ProximaNovaCond Semibold'), url('fonts/proximanovacond-semibold-webf
   -o-background-size: 100% 100%;
   -webkit-background-size: 100% 100%;
   background-repeat: no-repeat;
+}
+
+#cal {
+  outline: #f0f0f0 solid;
+}
+
+.resizing-input input, .resizing-input span {
+  color:#000;
+  font-family:'ProximaNovaCond Bold';
+  white-space: pre;
+  padding:0 2px 0 2px;
+  margin-right:1%;
 }
 
 svg path {

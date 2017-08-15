@@ -1,15 +1,84 @@
 var saveTimeout;
-var fetched = false;
 $(function() {
 	var weightMeasurement = 'lbs',
 		sliderMin = 50,
 		sliderMax = 75;
 
+	var nutrients = [
+		'calories', 'carbs', 'sugar', 'stevia', 'protein', 'fat', 'saturated-fat','biotin', 'calcium', 'chloride', 'cholesterol', 'choline', 'chromium', 'copper',
+		'fiber', 'folate', 'iodine', 'iron', 'manganese', 'magnesium', 'molybdenum', 'niacin', 'omega_3', 'omega_6',
+		'pantothenic', 'phosphorus', 'potassium', 'riboflavin', 'selenium', 'sodium', 'sulfur', 'thiamin',
+		'vitamin_a', 'vitamin_b12', 'vitamin_b6', 'vitamin_c', 'vitamin_d', 'vitamin_e', 'vitamin_k', 'zinc'
+	];
+
+	var caloriesFromInfo = getCaloriesFromInfo();
+
+	var minRatio = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], // Minimum ratio of ingredient's mass to total mass
+		maxRatio = [1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]; // Maximum ratio of ingredient's mass to total mass
+
+	// These nutrients are considered 'more important'
+	var macroNutrients = ["calories", "protein", "carbs", "fat"];
+
+	console.log("Successfully fetched recipe.\n");
+
+	var ingredients     = recipe.ingredients,
+		nutrientTargets = recipe.nutrientTargets,
+		i, j, nutrient;
+
+	// Combine blends into a single ingredient
+	ingredients = ingredients.map(function(ingredient) {
+		if( Object.prototype.toString.call( ingredient ) === '[object Array]' ) {
+			var max_serving = 0;
+			var max_container_size = ingredient[0].container_size/(ingredient[0].percent/100);
+			ingredient.forEach(function(part) {
+				if(part.serving > max_serving) max_serving = part.serving;
+
+				// Find the maximum amount of grams that we can make given 
+				// each ingredient's container size
+				if(Math.floor(part.container_size/(part.percent/100)) < max_container_size) 
+					max_container_size = Math.floor(part.container_size/(part.percent/100));
+			});
+			console.log("max_container_size "+max_container_size);
+			if(max_serving) {
+				ingredient.forEach(function(part) {
+					// Normalize each ingredient to have the same serving size
+					// and apply percentage multiplier
+					multiplier = max_serving/part.serving;
+					percent = part.percent/100;
+					part.serving = max_serving*percent;
+
+					nutrients.forEach(function(nutrient) {
+						part[nutrient] *= multiplier*percent;
+					});
+				});
+
+				// Sum up each part to produce the final blend
+				return ingredient.reduce(function(blend, part) {
+					percent = part.percent/100;
+
+					pricePerGram = part.item_cost/part.container_size;
+
+					blend.name += " & "+part.name+" ("+part.percent+"%)";
+					blend.serving += part.serving;
+					blend.container_size = max_container_size;
+					blend.item_cost += pricePerGram*percent*max_container_size;
+
+					nutrients.forEach(function(nutrient) {
+						blend[nutrient] += part[nutrient];
+					});
+					return blend;
+				});
+			}
+		} else {
+			return ingredient;
+		}
+	});
+
 	function updateRatios(dontUpdateSlider) {
 		var carb = sliderMin,
 			protein = (sliderMax - sliderMin),
 			fat = (100 - sliderMax),
-			calories = Number($('#cal').html());
+			calories = Number($('#cal').val());
 
 		$('.custom-carb').val(carb);
 		$('.custom-protein').val(protein);
@@ -59,18 +128,24 @@ $(function() {
 			lowWeight,
 			highWeight;   // How to weight penalties for going over or under a requirement
 
-		var nutrients = [
-			'calories', 'carbs', 'sugar', 'stevia', 'protein', 'fat', 'saturated-fat','biotin', 'calcium', 'chloride', 'cholesterol', 'choline', 'chromium', 'copper',
-			'fiber', 'folate', 'iodine', 'iron', 'manganese', 'magnesium', 'molybdenum', 'niacin', 'omega_3', 'omega_6',
-			'pantothenic', 'phosphorus', 'potassium', 'riboflavin', 'selenium', 'sodium', 'sulfur', 'thiamin',
-			'vitamin_a', 'vitamin_b12', 'vitamin_b6', 'vitamin_c', 'vitamin_d', 'vitamin_e', 'vitamin_k', 'zinc'
-		];
+		// Different ingredients depend on user preferences
 
-		var minRatio = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], // Minimum ratio of ingredient's mass to total mass
-			maxRatio = [1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]; // Maximum ratio of ingredient's mass to total mass
+		// Add Olive Oil if user wants >=60% calories from fat
+		//if(macros.fat < 60) ingredients.shift();
 
-		// These nutrients are considered 'more important'
-		var macroNutrients = ["calories", "protein", "carbs", "fat"];
+		// Override macros based on user variables from top of this file
+		nutrientTargets.calories = calories;
+		nutrientTargets.carbs    = Math.round(macros.carbs * calories / 100 / 4);
+		nutrientTargets.protein  = Math.round(macros.protein * calories / 100 / 4);
+		nutrientTargets.fat      = Math.round(macros.fat * calories / 100 / 9);
+		nutrientTargets.fiber    = Math.round(calories/1000.0 * 15.0);
+		nutrientTargets.fiber_max    = Math.round(calories/1000.0 * 18.0);
+		nutrientTargets.stevia       = Math.round(calories/1000.0 * 3.0);
+		nutrientTargets.stevia_max   = Math.round(calories/1000.0 * 6.0);
+		nutrientTargets.calories_max = Number((nutrientTargets.calories * 1.04).toFixed(2));
+		nutrientTargets.carbs_max    = Number((nutrientTargets.carbs * 1.04).toFixed(2));
+		nutrientTargets.protein_max  = Number((nutrientTargets.protein * 1.04).toFixed(2));
+		nutrientTargets.fat_max      = Number((nutrientTargets.fat * 1.04).toFixed(2));
 
 		/**
 		 * Fitness function that is being optimized
@@ -210,6 +285,8 @@ $(function() {
 				targetName = [],
 				x = []; // Number of servings of each ingredient
 
+			var multiplier = ($('#cal').val() < caloriesFromInfo && $('#cal').val() != 0) ? ($('#cal').val()/caloriesFromInfo) : 1;
+
 			// Fetch the target values ignoring the "max" values and any nonnumerical variables
 			for (var key in nutrientTargets) {
 				var name = key,
@@ -218,9 +295,14 @@ $(function() {
 
 				if (nutrients.indexOf(nutrient) > -1 && name.substring(name.length - 4, name.length) != "_max" && value > 0) {
 					targetName.push(name);
-					targetAmount.push(value);
+					if (macroNutrients.indexOf(name) >= 0) {
+						targetAmount.push(value);
+					} else {
+						targetAmount.push(multiplier*value);
+					}
 				}
 			}
+			console.log(targetAmount);
 
 			maxPerMin = [];
 			lowWeight = [];
@@ -232,7 +314,12 @@ $(function() {
 				// If has a max for this element
 				if (nutrientTargets[targetName[t] + "_max"] > targetAmount[t]) {
 					var maxvalue = nutrientTargets[targetName[t] + "_max"];
-					maxPerMin[t] = maxvalue / targetAmount[t]; // Record it
+					if (macroNutrients.indexOf(targetName[t]) >= 0) {
+						maxPerMin[t] = (maxvalue) / targetAmount[t];
+						console.log("maxPerMin[t]"+maxPerMin[t]);
+					} else {
+						maxPerMin[t] = (multiplier*maxvalue) / targetAmount[t];
+					}
 				}
 				else {
 					maxPerMin[t] = 1000; // Max is super high for things that aren't limited
@@ -264,15 +351,15 @@ $(function() {
 
 					// More importance is given to calories over protein, carbs, and fat
 					if (targetName[t] == "calories") {
-						lowWeight[t] *= 2;
-						highWeight[t] *= 2;
+						lowWeight[t] *= 10;
+						highWeight[t] *= 10;
 					}
 
 					maxPerMin[t] = 1;
 				}
 				else {
-					lowWeight[t] = 20000;
-					highWeight[t] = 10000;
+					lowWeight[t] = 200;
+					highWeight[t] = 100;
 				}
 
 				if (targetName[t] == "omega_6") {
@@ -377,7 +464,7 @@ $(function() {
 
 			// Map number of servings into raw quantities because that's what this function is supposed to return
 			for (var i = 0; i < ingredients.length; i++) {
-				ingredientQuantities[i] = x[i] * ingredients[i].serving;
+				ingredientQuantities[i] = Math.ceil(x[i] * ingredients[i].serving);
 			}
 
 			return ingredientQuantities;
@@ -396,86 +483,11 @@ $(function() {
 			return arr;
 		}
 
-		console.log("Successfully fetched recipe.\n");
-
-		var ingredients     = recipe.ingredients,
-			nutrientTargets = recipe.nutrientTargets,
-			i, j, nutrient;
-
-		// Different ingredients depend on user preferences
-
-		// Add Olive Oil if user wants >=60% calories from fat
-		if(macros.fat < 60) ingredients.shift();
-
-		// Combine blends into a single ingredient
-		ingredients = ingredients.map(function(ingredient) {
-			if( Object.prototype.toString.call( ingredient ) === '[object Array]' ) {
-				var max_serving = 0;
-				var max_container_size = ingredient[0].container_size/(ingredient[0].percent/100);
-				ingredient.forEach(function(part) {
-					if(part.serving > max_serving) max_serving = part.serving;
-
-					// Find the maximum amount of grams that we can make given 
-					// each ingredient's container size
-					if(Math.floor(part.container_size/(part.percent/100)) < max_container_size) 
-						max_container_size = Math.floor(part.container_size/(part.percent/100));
-				});
-				console.log("max_container_size "+max_container_size);
-				if(max_serving) {
-					ingredient.forEach(function(part) {
-						// Normalize each ingredient to have the same serving size
-						// and apply percentage multiplier
-						multiplier = max_serving/part.serving;
-						percent = part.percent/100;
-						part.serving = max_serving*percent;
-
-						nutrients.forEach(function(nutrient) {
-							part[nutrient] *= multiplier*percent;
-						});
-					});
-
-					// Sum up each part to produce the final blend
-					return ingredient.reduce(function(blend, part) {
-						percent = part.percent/100;
-
-						pricePerGram = part.item_cost/part.container_size;
-
-						blend.name += " & "+part.name+" ("+part.percent+"%)";
-						blend.serving += part.serving;
-						blend.container_size = max_container_size;
-						blend.item_cost += pricePerGram*percent*max_container_size;
-
-						nutrients.forEach(function(nutrient) {
-							blend[nutrient] += part[nutrient];
-						});
-						return blend;
-					});
-				}
-			} else {
-				return ingredient;
-			}
-		});
-			
-
-		// Override macros based on user variables from top of this file
-		nutrientTargets.calories = calories;
-		nutrientTargets.carbs    = Math.round(macros.carbs * calories / 100 / 4);
-		nutrientTargets.protein  = Math.round(macros.protein * calories / 100 / 4);
-		nutrientTargets.fat      = Math.round(macros.fat * calories / 100 / 9);
-		nutrientTargets.fiber    = Math.round(calories/1000.0 * 15.0);
-		nutrientTargets.fiber_max    = Math.round(calories/1000.0 * 18.0);
-		nutrientTargets.stevia       = Math.round(calories/1000.0 * 3.0);
-		nutrientTargets.stevia_max   = Math.round(calories/1000.0 * 6.0);
-		nutrientTargets.calories_max = Number((nutrientTargets.calories * 1.04).toFixed(2));
-		nutrientTargets.carbs_max    = Number((nutrientTargets.carbs * 1.04).toFixed(2));
-		nutrientTargets.protein_max  = Number((nutrientTargets.protein * 1.04).toFixed(2));
-		nutrientTargets.fat_max      = Number((nutrientTargets.fat * 1.04).toFixed(2));
-
 		// Here's where the magic happens...
 		var ingredientQuantities = generateRecipe(ingredients, nutrientTargets);
 
 		console.log(ingredients.map(function(ingredient) {return ingredient.name}));
-		console.log(ingredientQuantities.map(function(ingredient) {return ingredient*2}));
+		console.log(ingredientQuantities.map(function(ingredient) {return ingredient}));
 
 		var pct;
 
@@ -547,8 +559,7 @@ $(function() {
 		return formValues;
 	}
 
-	function recalc() {
-
+	function getCaloriesFromInfo() {
 		var formValues = saveFormValues();
 
 		var age = Number(formValues.age) || 24,
@@ -568,16 +579,22 @@ $(function() {
 			calories -= 161;
 		}
 		calories = Math.round(calories * exercise * goal);
-		calories = calories < lowest ? lowest : calories;
-
 		//console.log(age, height, sex, weight, exercise, goal, weightMeasurement, calories);
+		return calories < lowest ? lowest : calories;
+	}
 
-		$('#cal').html(calories);
+	function recalc() {
+		var calories = getCaloriesFromInfo();
+
+		$('#cal').val(calories);
 		updateRatios();
 	}
 
 	$('.calc').on('change', recalc);
 	$('.calc').on('keyup', recalc);
+
+	$('#cal').on('change', updateRatios);
+	$('#cal').on('keyup', updateRatios);
 
 	if (window.localStorage && window.localStorage.nutrientCalc) {
 		try {
@@ -637,5 +654,42 @@ $(function() {
 
 	$(document).on('keyup', '#cal-custom, .custom-carb, .custom-protein, .custom-fat', function() {
 		updateRatios();
+	});
+
+	// Adjust size of calories textbox depending on input
+	var $inputs = $('.resizing-input');
+
+	// Resize based on text if text.length > 0
+	// Otherwise resize based on the placeholder
+	function resizeForText(text) {
+		var $this = $(this);
+		if (!text.trim()) {
+			text = $this.attr('value').trim();
+		}
+		var $span = $this.parent().find('span');
+		$span.text(text);
+		var $inputSize = $span.width()+13.5;
+		$this.css("width", $inputSize);
+	}
+
+	$inputs.find('input').keypress(function(e) {
+		if (e.which && e.charCode) {
+			var c = String.fromCharCode(e.keyCode | e.charCode);
+			var $this = $(this);
+			if($this.val().length >= 4) return;
+			resizeForText.call($this, $this.val() + c);
+		}
+	});
+
+	// Backspace event only fires for keyup
+	$inputs.find('input').keyup(function(e) {
+		if (e.keyCode === 8 || e.keyCode === 46) {
+			resizeForText.call($(this), $(this).val());
+		}
+	});
+
+	$inputs.find('input').each(function() {
+		var $this = $(this);
+		resizeForText.call($this, $this.val())
 	});
 });
