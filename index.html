@@ -25,6 +25,7 @@
   <!--Bootstrap Slider-->
   <link href="css/bootstrap-slider.css" rel="stylesheet">
   
+  <script src="https://checkout.stripe.com/checkout.js"></script>
 </head>
 
 <!-- Body -->
@@ -217,10 +218,12 @@
                     <label class="control-label" for="input">Weight</label><i class="bar"></i>
                   </div>
                   <div class="form-group col-sm-4 padding-bottom">
+                    <div class="selectdiv">
                     <select class="calc" name="weightMeasurement">
                       <option selected="selected" value="lbs">lbs</option>
                       <option value="kg">kg</option>
                     </select>
+                    </div>
                     <i class="bar"></i>
                   </div>
                   <div class="form-group col-sm-12 padding-bottom">
@@ -288,7 +291,7 @@
                     <label class="control-label" for="input" >Fitness Goal</label><i class="bar"></i>
                   </div>
                   <div class="form-group col-sm-12 padding-bottom">
-                    <input type="number" required="required" placeholder="3" value="3" class="calc" name="meals"/>
+                    <input type="number" required="required" placeholder="3" value="3" class="calc form-control" id="meals" name="meals"/>
                     <label class="control-label" for="input">Number of Meals Consumed Per Day</label><i class="bar"></i>
                   </div>
                   <div class="form-group col-sm-12 padding-bottom" style="width:102.5%;margin-left:-2.5%;">
@@ -371,19 +374,46 @@
                     </tr>
                   </table>
 
-                  <label class="control-label col-xs-3 col-sm-offset-2"></label>
+                   <div class="form-group col-md-12 padding-top-2x padding-bottom">
+                    <select class="form-control" name="quantity" id="quantity">
+                      <option value="6">
+                        6 Meal Packs
+                      </option>
+
+                      <option value="12">
+                        12 Meal Packs
+                      </option>
+
+                      <option value="18">
+                        18 Meal Packs
+                      </option>
+
+                      <option value="24">
+                        24 Meal Packs
+                      </option>
+
+                      <option value="36">
+                        36 Meal Packs
+                      </option>
+
+                      <option value="48">
+                        48 Meal Packs
+                      </option>
+                    </select>
+                    <input class="submit" id="order" type="button" value="Order Fitro"/>
+                  </div>
             </form>
           </div>
 
           <div class="col-md-6 tablet-center mobile-center" id="landing-right" style="padding-bottom: 100%;margin-bottom: -100%;">
             <table id="prices" cellspacing="0" cellpadding="0" style="border-collapse: collapse;">
               <tr>
-                <th style="border-right: 1px solid; padding-right: 5%;">Price Per Day</th>
-                <th>Price Per Meal (600 Cal)</th> 
+                <th style="border-right: 1px solid;">Price Per Meal (<span class="calories_u">--</span> Cal)</th>
+                <th>Order Price (<span class="quantity_u">--</span> Packs)</th> 
               </tr>
               <tr>
-                <td style="border-right: 1px solid; padding-right: 5%;">$<span class="full-price">--.--</span></td>
-                <td>$<span class="meal-price">--.--</span></td> 
+                <td style="border-right: 1px solid;">$<span class="meal-price">--.--</span></td>
+                <td>$<span class="box-price">--.--</span></td> 
               </tr>
             </table>
 
@@ -392,7 +422,7 @@
               <section class="performance-facts" id="nutrition-label">
                 <header class="performance-facts__header">
                   <h1 class="performance-facts__title">Nutrition Facts</h1>
-                  <p>Servings Per Container 1 (about 82g)</p>
+                  <p>Servings Per Container 1 (about <span class="mass">--</span>g)</p>
                 </header>
                 <table class="performance-facts__table">
                   <thead>
@@ -434,7 +464,7 @@
                         <span class="fiber_u">--</span>g
                       </th>
                       <td>
-                        <b><span class="fiber_pct">--</span>%</b>
+                        <b></b>
                       </td>
                     </tr>
                     <tr>
@@ -665,7 +695,7 @@
                   <img src="img/features/07.png" alt="Feature">
                 </div>
                 <h3 class="bwi-title">Enter Info</h3>
-                <p class="bwi-text">Create a personalized meal-replacement shake by submitting your biometrics</p>
+                <p class="bwi-text">By using information about you, we create a personalized shake that can be used to replace a meal</p>
               </div>
             </div>
           </div>

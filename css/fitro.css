@@ -34,7 +34,7 @@ src: local('ProximaNovaCond Semibold'), url('fonts/proximanovacond-semibold-webf
 }
 
 .center-container {
-  height:100%;
+  height:120%;
   display: table;
   width:100%;
   margin:0;
@@ -52,7 +52,7 @@ src: local('ProximaNovaCond Semibold'), url('fonts/proximanovacond-semibold-webf
   left:50%;
   background: #fff;
   width:8.5em;
-  height:4em;
+  height:3.5em;
   margin: 0 auto;
   margin-left:-4.25em;
   padding-bottom:0.4em;
@@ -223,7 +223,7 @@ h1 {
 #results-container {
   width:102.5%;
 	margin-top:1%;
-  margin-bottom:0%;
+  margin-bottom:6%;
   margin-left:-2.5%;
 }
 
@@ -344,6 +344,10 @@ font-family: 'ProximaNovaCond Semibold';
 .form-group textarea {
   resize: none;
 }
+/* IE11 hide native button (thanks Matt!) */
+.form-group select::-ms-expand {
+  display: none;
+}
 .form-group select {
   text-overflow: ellipsis;
   width: 100%;
@@ -355,25 +359,34 @@ font-family: 'ProximaNovaCond Semibold';
   line-height: 1.6;
   box-shadow: none;
 
-  -webkit-box-sizing: border-box;
-  -moz-box-sizing: border-box;
-  box-sizing: border-box;
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  background-image:
-    linear-gradient(45deg, transparent 50%, gray 50%),
-    linear-gradient(135deg, gray 50%, transparent 50%),
-    linear-gradient(to right, #ccc, #ccc);
-  background-position:
-    calc(100% - 20px) calc(1em + 2px),
-    calc(100% - 15px) calc(1em + 2px),
-    calc(100% - 2.5em) 0.5em;
-  background-size:
-    5px 5px,
-    5px 5px,
-    0px 0em;
-  background-repeat: no-repeat;
+  -webkit-appearance:none;
+  -moz-appearance:none;
+  background: url(http://cdn1.iconfinder.com/data/icons/cc_mono_icon_set/blacks/16x16/br_down.png) no-repeat right;
+  background-size:13px;
+  background-position-x: 100%;
+  background-position-y: 60%;
 }
+.form-group #quantity {
+  text-overflow: ellipsis;
+  width: 100%;
+  font-size: 2rem;
+  height: 3.8rem;
+  padding: 0.25rem 0.25rem 0.125rem;
+  background: none;
+  line-height: 1.6;
+  box-shadow: none;
+  -moz-appearance: menulist;
+  -webkit-appearance: menulist;
+}
+.form-group .submit {
+  background-color:#ff6c00;
+  color:white;
+  font-size: 2.2rem;
+  margin: 0rem 0;
+  overflow: hidden;
+  box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 3px 1px -2px rgba(0, 0, 0, 0.2), 0 1px 5px 0 rgba(0, 0, 0, 0.12);
+}
+
 .form-group .control-label {
   position: absolute;
   top: 0.5rem;

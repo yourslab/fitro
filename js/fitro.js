@@ -11,8 +11,6 @@ $(function() {
 		'vitamin_a', 'vitamin_b12', 'vitamin_b6', 'vitamin_c', 'vitamin_d', 'vitamin_e', 'vitamin_k', 'zinc'
 	];
 
-	var caloriesFromInfo = getCaloriesFromInfo();
-
 	var minRatio = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], // Minimum ratio of ingredient's mass to total mass
 		maxRatio = [1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]; // Maximum ratio of ingredient's mass to total mass
 
@@ -146,6 +144,7 @@ $(function() {
 		nutrientTargets.carbs_max    = Number((nutrientTargets.carbs * 1.04).toFixed(2));
 		nutrientTargets.protein_max  = Number((nutrientTargets.protein * 1.04).toFixed(2));
 		nutrientTargets.fat_max      = Number((nutrientTargets.fat * 1.04).toFixed(2));
+		if ($('select[name=sex]').val() == "f") nutrientTargets.iron = 18;
 
 		/**
 		 * Fitness function that is being optimized
@@ -278,14 +277,13 @@ $(function() {
 		 * @author Alrecenk (Matt McDaniel) of Inductive Bias LLC (www.inductivebias.com) March 2014
 		 */
 		function generateRecipe(ingredients, nutrientTargets) {
-
 			// Initialize our return object: an array of ingredient quantities (in the same order the ingredients are passed in)
 			var ingredientQuantities = [],
 				targetAmount = [], // Target amounts used to convert ingredient amounts to per serving ratios
 				targetName = [],
 				x = []; // Number of servings of each ingredient
 
-			var multiplier = ($('#cal').val() < caloriesFromInfo && $('#cal').val() != 0) ? ($('#cal').val()/caloriesFromInfo) : 1;
+			var multiplier = ($('#cal').val() < getCaloriesFromInfo() && $('#cal').val() != 0) ? ($('#cal').val()/getCaloriesFromInfo()) : 1;
 
 			// Fetch the target values ignoring the "max" values and any nonnumerical variables
 			for (var key in nutrientTargets) {
@@ -302,7 +300,6 @@ $(function() {
 					}
 				}
 			}
-			console.log(targetAmount);
 
 			maxPerMin = [];
 			lowWeight = [];
@@ -316,7 +313,6 @@ $(function() {
 					var maxvalue = nutrientTargets[targetName[t] + "_max"];
 					if (macroNutrients.indexOf(targetName[t]) >= 0) {
 						maxPerMin[t] = (maxvalue) / targetAmount[t];
-						console.log("maxPerMin[t]"+maxPerMin[t]);
 					} else {
 						maxPerMin[t] = (multiplier*maxvalue) / targetAmount[t];
 					}
@@ -451,16 +447,31 @@ $(function() {
 			}
 			doChunk();
 
-			var pricePerDay = 0;
+			var pricePerMeal = 0;
+			var mass = 0;
 			for (var k = 0; k < x.length; k++) {
 				if(ingredients[k].name == "MK-7 Vitamin K-2") {
 					//x[k] = Math.ceil(x[k]); 
 				}
-				pricePerDay += x[k] * cost[k];
+				pricePerMeal += x[k] * cost[k];
+				mass += x[k] * ingredients[k].serving;
 			}
+			var packaging = 0.2;
+			pricePerMeal += packaging;
 
-			$(".full-price").html(pricePerDay.toFixed(2));
-			$(".meal-price").html((600.0/calories * pricePerDay).toFixed(2))
+			var markup = 1.45;
+			var boxQuantity = parseInt($('select[name=quantity]').val());
+			// Give discount for ordering more packs
+			markup -= (boxQuantity/6-1)*0.05;
+
+			var finalPrice = pricePerMeal*markup;
+
+			$(".mass").html(Math.round(mass));
+
+			$(".meal-price").html(finalPrice.toFixed(2));
+
+			$(".quantity_u").html(boxQuantity);
+			$(".box-price").html((boxQuantity*finalPrice).toFixed(2));
 
 			// Map number of servings into raw quantities because that's what this function is supposed to return
 			for (var i = 0; i < ingredients.length; i++) {
@@ -483,10 +494,19 @@ $(function() {
 			return arr;
 		}
 
-		// Here's where the magic happens...
-		var ingredientQuantities = generateRecipe(ingredients, nutrientTargets);
+		// We need to make a deep copy of ingredients list for modification based on user preferences
+		var ingredientsCopy = JSON.parse(JSON.stringify(ingredients));
+		// Use different Vitamin/Mineral Blend depending on sex
+		if ($('select[name=sex]').val() == "f") {
+			ingredientsCopy = ingredientsCopy.filter(function(ing) {return ing.name !== "GNC Mega Men® Sport";});
+		} else {
+			ingredientsCopy = ingredientsCopy.filter(function(ing) {return ing.name !== "GNC Women's Ultra Mega® Active Sport";});
+		}
 
-		console.log(ingredients.map(function(ingredient) {return ingredient.name}));
+		// Here's where the magic happens...
+		var ingredientQuantities = generateRecipe(ingredientsCopy, nutrientTargets);
+
+		console.log(ingredientsCopy.map(function(ingredient) {return ingredient.name}));
 		console.log(ingredientQuantities.map(function(ingredient) {return ingredient}));
 
 		var pct;
@@ -497,9 +517,9 @@ $(function() {
 
 				// Add up the amount of the current nutrient in each of the ingredients.
 				var nutrientInIngredients = 0;
-				for (j=0; j< ingredients.length; j++) {
-					if (typeof ingredients[j][nutrient] == 'number' && ingredientQuantities[j] > 0) {
-						nutrientInIngredients += ingredients[j][nutrient] * ingredientQuantities[j] / ingredients[j].serving;
+				for (j=0; j< ingredientsCopy.length; j++) {
+					if (typeof ingredientsCopy[j][nutrient] == 'number' && ingredientQuantities[j] > 0) {
+						nutrientInIngredients += ingredientsCopy[j][nutrient] * ingredientQuantities[j] / ingredientsCopy[j].serving;
 					}
 				}
 
@@ -585,15 +605,19 @@ $(function() {
 
 	function recalc() {
 		var calories = getCaloriesFromInfo();
+		var meals = Number($('#meals').val());
+		if (meals > 0) calories = parseInt(calories/meals);
 
 		$('#cal').val(calories);
 		updateRatios();
+		resizeForText.call($('.resizing-input input'), $('.resizing-input input').val());
 	}
 
 	$('.calc').on('change', recalc);
 	$('.calc').on('keyup', recalc);
 
-	$('#cal').on('change', updateRatios);
+	//$('#cal').on('change', updateRatios);
+	$('select[name=quantity]').on('change', updateRatios);
 	$('#cal').on('keyup', updateRatios);
 
 	if (window.localStorage && window.localStorage.nutrientCalc) {
@@ -691,5 +715,28 @@ $(function() {
 	$inputs.find('input').each(function() {
 		var $this = $(this);
 		resizeForText.call($this, $this.val())
+	});
+
+	// Handles Stripe checkout
+	var handler = StripeCheckout.configure({
+		key: 'pk_test_WaLOHYeWYjv8895iscbee0hf',
+		locale: 'auto',
+		shippingAddress: true,
+		zipCode: true,
+		token: function(token) {
+		// You can access the token ID with `token.id`.
+		// Get the token ID to your server-side code for use.
+			console.log(token);
+		}
+	});
+
+	document.getElementById('order').addEventListener('click', function(e) {
+	  // Open Checkout with further options:
+	  handler.open({
+	    name: 'Fitro',
+	    description: $('select[name=quantity]').val()+' Meal Packs ('+$(".calories_u").html()+' calories each)',
+	    amount: Number($(".box-price").text())*100
+	  });
+	  e.preventDefault();
 	});
 });
