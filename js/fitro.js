@@ -1,5 +1,9 @@
 var saveTimeout;
 $(function() {
+	var finalIngredientsList = [];
+	var finalIngredientsQuantityList = [];
+	var finalRecipe = {}
+
 	var weightMeasurement = 'lbs',
 		sliderMin = 50,
 		sliderMax = 75;
@@ -506,8 +510,14 @@ $(function() {
 		// Here's where the magic happens...
 		var ingredientQuantities = generateRecipe(ingredientsCopy, nutrientTargets);
 
-		console.log(ingredientsCopy.map(function(ingredient) {return ingredient.name}));
-		console.log(ingredientQuantities.map(function(ingredient) {return ingredient}));
+		finalIngredientsList = (ingredientsCopy.map(function(ingredient) {return ingredient.name}));
+		finalIngredientsQuantityList = (ingredientQuantities.map(function(ingredient) {return ingredient}));
+		for(var i = 0; i < finalIngredientsList.length; i++){
+			var key = finalIngredientsList[i];
+			if (key.length >= 40) key = finalIngredientsList[i].substring(0,35)+'...';
+			finalRecipe[key] = finalIngredientsQuantityList[i];
+		}
+		console.log(finalRecipe);
 
 		var pct;
 
@@ -560,6 +570,7 @@ $(function() {
 
 	function saveFormValues() {
 		var formValues = {
+			quantity: $('select[name=quantity]').val(),
 			age: $('input[name=age]').val(),
 			height: $('select[name=height]').val(),
 			sex: $('select[name=sex]').val(),
@@ -718,6 +729,7 @@ $(function() {
 	});
 
 	// Handles Stripe checkout
+	//chargeRequest.metadata = formValues;
 	var handler = StripeCheckout.configure({
 		key: 'pk_test_WaLOHYeWYjv8895iscbee0hf',
 		locale: 'auto',
@@ -726,16 +738,45 @@ $(function() {
 		token: function(token) {
 		// You can access the token ID with `token.id`.
 		// Get the token ID to your server-side code for use.
-			console.log(token);
+			//jQuery.extend(chargeRequest, token);
+			//console.log(chargeRequest);
+			var chargeRequest = {
+				name: 'Fitro',
+				description: $('select[name=quantity]').val()+' Meal Packs ('+$(".calories_u:eq(0)").text()+' calories each)',
+				amount: Number($(".box-price").text())*100
+			};
+			var formValues = saveFormValues();
+			delete formValues["sliderMin"];
+			delete formValues["sliderMax"];
+			var metadata = {};
+			//metadata.biometrics = formValues;
+			//metadata.recipe = finalRecipe;
+			jQuery.extend(metadata,finalRecipe);
+			jQuery.extend(metadata,formValues);
+			jQuery.extend(chargeRequest,token);
+			chargeRequest.metadata = metadata;
+			document.write(JSON.stringify(chargeRequest));
+			
+			/*jQuery.ajax({
+				type: 'POST',
+				contentType: 'application/json',
+				url: 'https://wt-d6cf833b659f32f492aa90963e6050d4-0.run.webtask.io/webtask-stripe-charge',
+				data: chargeRequest,
+				success: function() {
+
+				},
+				headers: 
+				dataType: dataType
+			});*/
 		}
 	});
 
 	document.getElementById('order').addEventListener('click', function(e) {
 	  // Open Checkout with further options:
 	  handler.open({
-	    name: 'Fitro',
-	    description: $('select[name=quantity]').val()+' Meal Packs ('+$(".calories_u").html()+' calories each)',
-	    amount: Number($(".box-price").text())*100
+		name: 'Fitro',
+		description: $('select[name=quantity]').val()+' Meal Packs ('+$(".calories_u:eq(0)").text()+' calories each)',
+		amount: Number($(".box-price").text())*100
 	  });
 	  e.preventDefault();
 	});
