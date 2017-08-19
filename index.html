@@ -26,6 +26,20 @@
   <link href="css/bootstrap-slider.css" rel="stylesheet">
   
   <script src="https://checkout.stripe.com/checkout.js"></script>
+
+  <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-104881563-1', 'auto');
+    ga('send', 'pageview');
+  </script>
+  <!-- start Mixpanel --><script type="text/javascript">(function(e,a){if(!a.__SV){var b=window;try{var c,l,i,j=b.location,g=j.hash;c=function(a,b){return(l=a.match(RegExp(b+"=([^&]*)")))?l[1]:null};g&&c(g,"state")&&(i=JSON.parse(decodeURIComponent(c(g,"state"))),"mpeditor"===i.action&&(b.sessionStorage.setItem("_mpcehash",g),history.replaceState(i.desiredHash||"",e.title,j.pathname+j.search)))}catch(m){}var k,h;window.mixpanel=a;a._i=[];a.init=function(b,c,f){function e(b,a){var c=a.split(".");2==c.length&&(b=b[c[0]],a=c[1]);b[a]=function(){b.push([a].concat(Array.prototype.slice.call(arguments,
+0)))}}var d=a;"undefined"!==typeof f?d=a[f]=[]:f="mixpanel";d.people=d.people||[];d.toString=function(b){var a="mixpanel";"mixpanel"!==f&&(a+="."+f);b||(a+=" (stub)");return a};d.people.toString=function(){return d.toString(1)+".people (stub)"};k="disable time_event track track_pageview track_links track_forms register register_once alias unregister identify name_tag set_config reset people.set people.set_once people.increment people.append people.union people.track_charge people.clear_charges people.delete_user".split(" ");
+for(h=0;h<k.length;h++)e(d,k[h]);a._i.push([b,c,f])};a.__SV=1.2;b=e.createElement("script");b.type="text/javascript";b.async=!0;b.src="undefined"!==typeof MIXPANEL_CUSTOM_LIB_URL?MIXPANEL_CUSTOM_LIB_URL:"file:"===e.location.protocol&&"//cdn.mxpnl.com/libs/mixpanel-2-latest.min.js".match(/^\/\//)?"https://cdn.mxpnl.com/libs/mixpanel-2-latest.min.js":"//cdn.mxpnl.com/libs/mixpanel-2-latest.min.js";c=e.getElementsByTagName("script")[0];c.parentNode.insertBefore(b,c)}})(document,window.mixpanel||[]);
+mixpanel.init("331c3af1f3bc5376cb6e1cdc92d71c52");</script><!-- end Mixpanel -->
 </head>
 
 <!-- Body -->
@@ -377,27 +391,27 @@
                    <div class="form-group col-md-12 padding-top-2x padding-bottom">
                     <select class="form-control" name="quantity" id="quantity">
                       <option value="6">
-                        6 Meal Packs
+                        6 Meal Packets
                       </option>
 
                       <option value="12">
-                        12 Meal Packs
+                        12 Meal Packets
                       </option>
 
                       <option value="18">
-                        18 Meal Packs
+                        18 Meal Packets
                       </option>
 
                       <option value="24">
-                        24 Meal Packs
+                        24 Meal Packets
                       </option>
 
                       <option value="36">
-                        36 Meal Packs
+                        36 Meal Packets
                       </option>
 
                       <option value="48">
-                        48 Meal Packs
+                        48 Meal Packets
                       </option>
                     </select>
                     <input class="submit" id="order" type="button" value="Order Fitro"/>
@@ -409,7 +423,7 @@
             <table id="prices" cellspacing="0" cellpadding="0" style="border-collapse: collapse;">
               <tr>
                 <th style="border-right: 1px solid;">Price Per Meal (<span class="calories_u">--</span> Cal)</th>
-                <th>Order Price (<span class="quantity_u">--</span> Packs)</th> 
+                <th>Order Price (<span class="quantity_u">--</span> Meals)</th> 
               </tr>
               <tr>
                 <td style="border-right: 1px solid;">$<span class="meal-price">--.--</span></td>
@@ -463,9 +477,16 @@
                         Dietary Fiber
                         <span class="fiber_u">--</span>g
                       </th>
-                      <td>
-                        <b></b>
+                      <td></td>
+                    </tr>
+                    <tr>
+                      <td class="blank-cell">
                       </td>
+                      <th>
+                        Sugar
+                        <span class="sugar_u">--</span>g
+                      </th>
+                      <td></td>
                     </tr>
                     <tr>
                       <th colspan="2">
@@ -682,20 +703,20 @@
     <!-- Features -->
     <!-- Fullwidth section has bunch of modifier classes to alter its appearance: ".border-top, .border-bottom, .arrow-top, .arrow-bottom, .bg-gray, .bg-default, .bg-primary, .bg-parallax". They can be used separately or alltogether. -->
     <section class="fw-section padding-top-3x padding-bottom-3x arrow-top caption">
-      <div class="container">
+      <div class="container" style="z-index:99">
       <h2 class="block-title text-center scrollReveal sr-bottom">
         How does it work?
-        <small>It's simple</small>
+        <small>Complete nutrition in three, easy steps</small>
       </h2>
         <div class="row">
           <div class="col-sm-4 scrollReveal sr-scaleUp sr-ease-in-out-back">
             <div class="box-with-icon text-center">
               <div class="bwi-inner">
                 <div class="bwi-icon">
-                  <img src="img/features/07.png" alt="Feature">
+                  <img src="img/features/form-icon.png" alt="Tell Us About Yourself">
                 </div>
-                <h3 class="bwi-title">Enter Info</h3>
-                <p class="bwi-text">By using information about you, we create a personalized shake that can be used to replace a meal</p>
+                <h3 class="bwi-title">Tell Us About Yourself</h3>
+                <p class="bwi-text">Using your biometrics, we create a personalized meal-replacement shake that provides you with every nutrient that your body needs</p>
               </div>
             </div>
           </div>
@@ -703,10 +724,10 @@
             <div class="box-with-icon text-center">
               <div class="bwi-inner">
                 <div class="bwi-icon">
-                  <img src="img/features/08.png" alt="Feature">
+                  <img src="img/features/shaker-icon.png" alt="Pour Into Shaker Bottle">
                 </div>
-                <h3 class="bwi-title">Personalize</h3>
-                <p class="bwi-text">Customize Fitro to your desired specifications until satisfied</p>
+                <h3 class="bwi-title">Pour Into Shaker Bottle</h3>
+                <p class="bwi-text">Once you receive your order, simply open a packet and pour its powdered contents into a shaker bottle.</p>
               </div>
             </div>
           </div>
@@ -714,10 +735,10 @@
             <div class="box-with-icon text-center">
               <div class="bwi-inner">
                 <div class="bwi-icon">
-                  <img src="img/features/09.png" alt="Feature">
+                  <img src="img/features/shake-icon.png" alt="Just Add Water">
                 </div>
-                <h3 class="bwi-title">Drink</h3>
-                <p class="bwi-text">Receive ample nutrition with an easy-to-drink shake</p>
+                <h3 class="bwi-title">Just Add Water</h3>
+                <p class="bwi-text">Add cold water or milk to your shaker bottle and shake vigorously until smooth. Enjoy immediately or wait 30 minutes for a better tasting shake.</p>
               </div>
             </div>
           </div>
@@ -725,91 +746,19 @@
       </div><!-- .container -->
     </section><!-- .fw-section.border-top -->
 
-    <!-- Feature Tabs (App Features) -->
+    <!-- Funding Progress -->
     <!-- Fullwidth section has bunch of modifier classes to alter its appearance: ".border-top, .border-bottom, .arrow-top, .arrow-bottom, .bg-gray, .bg-default, .bg-primary, .bg-parallax". They can be used separately or alltogether. -->
-    <section class="fw-section border-bottom padding-top-3x padding-bottom-2x feature-tabs" style="background-image: url(img/home/app-bg01.jpg);">
-      <div class="feature-tabs">
-        <!-- Heading when columns stack -->
-        <h2 class="block-title text-center visible-when-stack">
-          Taste
-          <small>No setup fee, no minimum spend.</small>
-        </h2>
-        <div class="clearfix">
-          <!-- Devices -->
-          <div class="devices">
-            <div class="tablet">
-              <img src="img/feature-tabs/ipad.png" alt="iPad">
-              <div class="mask">
-                <ul class="screens">
-                  <li class="active in" id="ts01"><img src="img/feature-tabs/tablet/screen01.jpg" alt="Screen 01"></li>
-                  <li id="ts02"><img src="img/feature-tabs/tablet/screen02.jpg" alt="Screen 02"></li>
-                  <li id="ts03"><img src="img/feature-tabs/tablet/screen03.jpg" alt="Screen 03"></li>
-                  <li id="ts04"><img src="img/feature-tabs/tablet/screen04.jpg" alt="Screen 04"></li>
-                </ul>
-              </div>
-            </div>
-            <div class="phone">
-              <img src="img/feature-tabs/iphone.png" alt="iPhone">
-              <div class="mask">
-                <ul class="screens">
-                  <li class="active in" id="ps01"><img src="img/feature-tabs/phone/screen01.jpg" alt="Screen 01"></li>
-                  <li id="ps02"><img src="img/feature-tabs/phone/screen02.jpg" alt="Screen 02"></li>
-                  <li id="ps03"><img src="img/feature-tabs/phone/screen03.jpg" alt="Screen 03"></li>
-                  <li id="ps04"><img src="img/feature-tabs/phone/screen04.jpg" alt="Screen 04"></li>
-                </ul>
-              </div>
-            </div>
+    <section class="fw-section border-bottom padding-top-3x padding-bottom-3x bg-default" style="background-image: url(img/home/funding-progress-bg.jpg);">
+      <div class="container padding-bottom-3x">
+        <div class="row">
+          <div class="col-lg-6 col-lg-offset-3 col-md-8 col-md-offset-2 col-sm-10 col-sm-offset-1">
+            <h4 class="text-center">Our Mission</h4>
+            <p class="text-gray text-justify">Our busy lifestyles can make daily nutrition a tedious endeavour. There are times when we simply don't have the time, energy, or convenience to prepare a healthy meal that provides us with all the nutrients we need to sustain our physical and mental performance. It can also be difficult to tell whether or not we're eating the right amount of food, and this might lead to overeating or undereating. To this end, we designed Fitro to cater to your individual nutritional requirements. Unlike most meal-replacement shakes, Fitro is not a one-size-fits-all solution. Instead, by utilizing your biometrics, Fitro supplements your diet by providing you with the exact amount of macronutrients and micronutrients that you're likely missing out on. By leveraging science and technology, Fitro makes healthy eating easier and sustainable.</p>
+            <div class="padding-bottom-3x"></div><div class="padding-bottom-3x"></div>
           </div>
-          <!-- Tabs -->
-          <div class="tabs text-center">
-            <h2 class="block-title text-center hidden-when-stack">
-              Benefits
-              <small>Why should you use Fitro?</small>
-            </h2>
-            <!-- Nav Tabs -->
-            <!-- Remove data-autoswitch="true" to disable automatic tabs change. -->
-            <ul class="nav-tabs" data-autoswitch="true" data-interval="4500">
-              <li class="active"><a href="#tasks" data-toggle="tab" data-tablet="#ts01" data-phone="#ps01"><img src="img/features/10.png" alt="Feature"></a></li>
-              <li><a href="#file-sharing" data-toggle="tab" data-tablet="#ts02" data-phone="#ps02"><img src="img/features/12.png" alt="Feature"></a></li>
-              <li><a href="#performance" data-toggle="tab" data-tablet="#ts03" data-phone="#ps03"><img src="img/features/11.png" alt="Feature"></a></li>
-              <li><a href="#planner" data-toggle="tab" data-tablet="#ts04" data-phone="#ps04"><img src="img/features/13.png" alt="Feature"></a></li>
-            </ul>
-            <!-- Tab panes -->
-            <!-- Use different transitions: 'scale', 'scaleup', 'top', 'bottom', 'left', 'right' and 'flip' -->
-            <div class="tab-content">
-              <div class="tab-pane transition scale fade in active" id="tasks">
-                <h4>Lorem ipsum dolor</h4>
-                <p class="text-gray text-lg">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Eos iste distinctio sed architecto rem sapiente atque itaque soluta quisquam at ex praesentium sed exercitationem.</p>
-              </div>
-              <div class="tab-pane transition scale fade" id="file-sharing">
-                <h4>Lorem ipsum dolor</h4>
-                <p class="text-gray text-lg">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Eos iste distinctio sed architecto rem sapiente atque itaque soluta quisquam at ex praesentium sed exercitationem.</p>
-              </div>
-              <div class="tab-pane transition scale fade" id="performance">
-                <h4>Lorem ipsum dolor</h4>
-                <p class="text-gray text-lg">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Eos iste distinctio sed architecto rem sapiente atque itaque soluta quisquam at ex praesentium sed exercitationem.</p>
-              </div>
-              <div class="tab-pane transition scale fade" id="planner">
-                <h4>Lorem ipsum dolor</h4>
-                <p class="text-gray text-lg">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Eos iste distinctio sed architecto rem sapiente atque itaque soluta quisquam at ex praesentium sed exercitationem.</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div><!-- .feature-tabs -->
-    </section><!-- .fw-section.arrow-top.border-bottom -->
-
-    <!-- Video Presentation -->
-    <!-- Fullwidth section has bunch of modifier classes to alter its appearance: ".border-top, .border-bottom, .arrow-top, .arrow-bottom, .bg-gray, .bg-default, .bg-primary, .bg-parallax". They can be used separately or alltogether. -->
-    <section class="fw-section bg-parallax padding-top-3x padding-bottom-3x" style="background-image: url(img/home/video-bg.jpg);" data-stellar-background-ratio="0.65">
-      <span class="overlay" style="opacity: .65;"></span>
-      <div class="container padding-top-3x padding-bottom-3x">
-        <div class="video-popup-btn text-light text-center padding-top-3x padding-bottom-3x">
-          <a href="https://vimeo.com/33984473" class="play-btn waves-effect waves-light"><i class="icon-play"></i></a>
-          <h4>Learn More</h4>
-        </div>
+        </div><!-- .row -->
       </div><!-- .container -->
-    </section><!-- .fw-section.bg-parallax -->
+    </section><!-- .fw-section.next-to-footer.border-top -->
 
     <!-- Scroll To Top Button -->
     <a href="#" class="scroll-to-top-btn">
@@ -817,27 +766,23 @@
     </a><!-- .scroll-to-top-btn -->
 
     <!-- Footer -->
-    <footer class="footer">
+    <footer class="footer" style="z-index: 1943949234;">
       <div class="top-footer">
         <div class="container">
           <div class="tools">
             <div class="cell">
               <i><img src="img/footer/icons/help.png" alt="Email"></i>
-              <span><a href="mailto:info@email.com">info@email.com</a></span>
+              <span><a href="mailto:support@fitro.me">support@fitro.me</a></span>
             </div>
             <div class="cell">
               <i><img src="img/footer/icons/phone.png" alt="Phone"></i>
-              <span><a href="#">+10 (8) 555 333</a></span>
-            </div>
-            <div class="cell">
-              <i><img src="img/footer/icons/chat.png" alt="Chat"></i>
-              <span><a href="#">Live Chat</a></span>
+              <span><a href="#">+1 (323) 899 3327</a></span>
             </div>
           </div>
           <div class="subscribe">
             <div class="subscribe-form">
               <i><img src="img/footer/icons/envelope.png" alt="Subscribe"></i>
-              <form action="//8guild.us3.list-manage.com/subscribe/post?u=168a366a98d3248fbc35c0b67&amp;id=011a3332a0" method="post" target="_blank" novalidate autocomplete="off">
+              <form action="/subscribe" method="post" target="_blank" novalidate autocomplete="off">
                 <label for="subscr_email" class="sr-only">Subscribe to latest news</label>
                 <input type="email" class="form-control" id="subscr_email" placeholder="Your Email">
                 <!-- real people should not fill this in and expect good things - do not remove this or risk form bot signups-->

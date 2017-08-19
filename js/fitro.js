@@ -4,6 +4,9 @@ $(function() {
 	var finalIngredientsQuantityList = [];
 	var finalRecipe = {}
 
+	var costPerShake = -1;
+	var totalMass = -1;
+
 	var weightMeasurement = 'lbs',
 		sliderMin = 50,
 		sliderMax = 75;
@@ -21,7 +24,7 @@ $(function() {
 	// These nutrients are considered 'more important'
 	var macroNutrients = ["calories", "protein", "carbs", "fat"];
 
-	console.log("Successfully fetched recipe.\n");
+	//console.log("Successfully fetched recipe.\n");
 
 	var ingredients     = recipe.ingredients,
 		nutrientTargets = recipe.nutrientTargets,
@@ -40,7 +43,7 @@ $(function() {
 				if(Math.floor(part.container_size/(part.percent/100)) < max_container_size) 
 					max_container_size = Math.floor(part.container_size/(part.percent/100));
 			});
-			console.log("max_container_size "+max_container_size);
+			//console.log("max_container_size "+max_container_size);
 			if(max_serving) {
 				ingredient.forEach(function(part) {
 					// Normalize each ingredient to have the same serving size
@@ -199,6 +202,7 @@ $(function() {
 				penalty += cost[i] * x[i];
 				mass += x[i];
 			}
+			totalMass = mass.toFixed(2);
 
 			// Increase error for not meeting a certain ratio requirement
 			for (var i = 0; i < ingredientLength; i++) {
@@ -394,7 +398,7 @@ $(function() {
 			// Projected Gradient descent with halving step size, accepting largest step with improvement.
 			// Could be made faster by moving to LBGS and implementing a proper inexact line search
 			// but this method does guarantee convergence so those improvements are on the back burner
-			console.log("Calculating Optimal Recipe...");
+			//console.log("Calculating Optimal Recipe...");
 
 			var fv = f(x),
 				g = gradient(x),
@@ -462,6 +466,7 @@ $(function() {
 			}
 			var packaging = 0.2;
 			pricePerMeal += packaging;
+			costPerShake = pricePerMeal.toFixed(2);
 
 			var markup = 1.45;
 			var boxQuantity = parseInt($('select[name=quantity]').val());
@@ -517,7 +522,7 @@ $(function() {
 			if (key.length >= 40) key = finalIngredientsList[i].substring(0,35)+'...';
 			finalRecipe[key] = finalIngredientsQuantityList[i];
 		}
-		console.log(finalRecipe);
+		//console.log(finalRecipe);
 
 		var pct;
 
@@ -731,7 +736,7 @@ $(function() {
 	// Handles Stripe checkout
 	//chargeRequest.metadata = formValues;
 	var handler = StripeCheckout.configure({
-		key: 'pk_test_WaLOHYeWYjv8895iscbee0hf',
+		key: 'pk_live_ECxRJzIfpdaZa3mOKwjRYwgh',
 		locale: 'auto',
 		shippingAddress: true,
 		zipCode: true,
@@ -742,42 +747,46 @@ $(function() {
 			//console.log(chargeRequest);
 			var chargeRequest = {
 				name: 'Fitro',
-				description: $('select[name=quantity]').val()+' Meal Packs ('+$(".calories_u:eq(0)").text()+' calories each)',
+				description: $('select[name=quantity]').val()+' Meal Packets ('+$(".calories_u:eq(0)").text()+' calories each)',
 				amount: Number($(".box-price").text())*100
 			};
 			var formValues = saveFormValues();
 			delete formValues["sliderMin"];
 			delete formValues["sliderMax"];
+			delete formValues["ratios"];
 			var metadata = {};
-			//metadata.biometrics = formValues;
-			//metadata.recipe = finalRecipe;
+			metadata.costPerShake = costPerShake;
+			metadata.totalMass = totalMass;		
 			jQuery.extend(metadata,finalRecipe);
 			jQuery.extend(metadata,formValues);
 			jQuery.extend(chargeRequest,token);
 			chargeRequest.metadata = metadata;
-			document.write(JSON.stringify(chargeRequest));
+			//document.write(JSON.stringify(chargeRequest));
 			
-			/*jQuery.ajax({
+			jQuery.ajax({
 				type: 'POST',
 				contentType: 'application/json',
 				url: 'https://wt-d6cf833b659f32f492aa90963e6050d4-0.run.webtask.io/webtask-stripe-charge',
-				data: chargeRequest,
-				success: function() {
-
+				data: JSON.stringify(chargeRequest),
+				success: function(result) {
+					alert("Thank you for ordering Fitro! We'll email your order details soon.");
 				},
-				headers: 
-				dataType: dataType
-			});*/
+				error: function(xhr,status,error) {
+					alert("Something went wrong with your order! Try again.");
+				}
+			});
 		}
 	});
 
 	document.getElementById('order').addEventListener('click', function(e) {
-	  // Open Checkout with further options:
-	  handler.open({
-		name: 'Fitro',
-		description: $('select[name=quantity]').val()+' Meal Packs ('+$(".calories_u:eq(0)").text()+' calories each)',
-		amount: Number($(".box-price").text())*100
-	  });
-	  e.preventDefault();
+		if (costPerShake != -1 && totalMass != -1) {
+			// Open Checkout with further options:
+			handler.open({
+				name: 'Fitro',
+				description: $('select[name=quantity]').val()+' Meal Packs ('+$(".calories_u:eq(0)").text()+' calories each)',
+				amount: Number($(".box-price").text())*100
+			});
+			e.preventDefault();
+		}
 	});
 });
