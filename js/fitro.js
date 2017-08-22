@@ -511,16 +511,23 @@ $(function() {
 		} else {
 			ingredientsCopy = ingredientsCopy.filter(function(ing) {return ing.name !== "GNC Women's Ultra Mega® Active Sport";});
 		}
+		console.log(ingredientsCopy);
 
 		// Here's where the magic happens...
 		var ingredientQuantities = generateRecipe(ingredientsCopy, nutrientTargets);
+
+		// clear these lists
+		finalIngredientsList = [];
+		finalIngredientsQuantityList = [];
+		finalRecipe = {};
 
 		finalIngredientsList = (ingredientsCopy.map(function(ingredient) {return ingredient.name}));
 		finalIngredientsQuantityList = (ingredientQuantities.map(function(ingredient) {return ingredient}));
 		for(var i = 0; i < finalIngredientsList.length; i++){
 			var key = finalIngredientsList[i];
+			// Reduce key length to 40 because this is the maximum of Stripe
 			if (key.length >= 40) key = finalIngredientsList[i].substring(0,35)+'...';
-			finalRecipe[key] = finalIngredientsQuantityList[i];
+			finalRecipe[key] = finalIngredientsQuantityList[i]*2;
 		}
 		//console.log(finalRecipe);
 
@@ -629,8 +636,12 @@ $(function() {
 		resizeForText.call($('.resizing-input input'), $('.resizing-input input').val());
 	}
 
-	$('.calc').on('change', recalc);
-	$('.calc').on('keyup', recalc);
+	var onFormChange = function() {
+		mixpanel.track("Form edit");
+		recalc();
+	}
+	$('.calc').on('change', onFormChange);
+	$('.calc').on('keyup', onFormChange);
 
 	//$('#cal').on('change', updateRatios);
 	$('select[name=quantity]').on('change', updateRatios);
@@ -779,6 +790,7 @@ $(function() {
 	});
 
 	document.getElementById('order').addEventListener('click', function(e) {
+		mixpanel.track("Order click");
 		if (costPerShake != -1 && totalMass != -1) {
 			// Open Checkout with further options:
 			handler.open({
